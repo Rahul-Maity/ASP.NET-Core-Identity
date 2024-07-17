@@ -4,6 +4,7 @@ using IdentityApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace IdentityApi.Controllers
@@ -42,6 +43,26 @@ namespace IdentityApi.Controllers
             return CreateApplicationUserDto(user);
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult>Register(RegisterDto model)
+        {
+            if(await CheckEmailExistAsync(model.Email))
+            {
+                return BadRequest($"An account already using this {model.Email},try using another");
+            }
+            var userToAdd = new User
+            {
+                FirstName = model.Firstname.ToLower(),
+                LastName = model.Lastname.ToLower(),
+                UserName = model.Email.ToLower(),
+                Email = model.Email.ToLower(),
+                EmailConfirmed = true
+            };
+            var result = await _userManager.CreateAsync(userToAdd, model.Password);
+            if(!result.Succeeded) { return BadRequest(result.Errors); }
+            return Ok("The account has been created, you can now login");
+        }
+
         #region private helper method
 
         private UserDto CreateApplicationUserDto(User user)
@@ -53,6 +74,11 @@ namespace IdentityApi.Controllers
                 LastName = user.LastName,
                 JWT = _jwtService.createJWT(user)
             };
+        }
+
+        private async Task<bool>CheckEmailExistAsync(string email)
+        {
+            return await _userManager.Users.AnyAsync(u =>u.Email == email.ToLower());
         }
 
         #endregion

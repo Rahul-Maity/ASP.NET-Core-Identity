@@ -1,7 +1,8 @@
 <div class="d-flex justify-content-center">
     <div class="col-12 col-lg-5">
         <div class="form-signin">
-            <form action="">
+            <form action="" [formGroup]="registerForm"  (ngSubmit)="register()" autocomplete="off">
+
                 <div class="text-center mb-4">
                     <h6 class="mb-3 font-weight-normal">
                         Let's Get Started to
@@ -9,19 +10,19 @@
                     </h6>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" placeholder="First Name">
+                    <input type="text" class="form-control" placeholder="First Name" formControlName="firstName">
                     <label for="firstname">First Name</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" placeholder="Last Name">
+                    <input type="text" class="form-control" placeholder="Last Name" formControlName="lastName">
                     <label for="lastname">Last Name</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" placeholder="Email">
+                    <input type="text" class="form-control" placeholder="Email" formControlName="email">
                     <label for="email">Email</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="password" class="form-control" placeholder="Password">
+                    <input type="password" class="form-control" placeholder="Password" formControlName="password">
                     <label for="password">Password</label>
                 </div>
                 <div class="d-grid mt-4 px-1">

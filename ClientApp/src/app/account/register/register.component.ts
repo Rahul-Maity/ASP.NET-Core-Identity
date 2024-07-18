@@ -26,5 +26,21 @@ export class RegisterComponent implements OnInit{
       
     })
   }
+  register()
+  {
+    this.submitted = true;
+    this.errorMessage = [];
+
+    this.accountService.register(this.registerForm.value).subscribe({
+      next: (res) => {
+        console.log(res);
+      },
+      error: error => {
+        console.log(error);
+      }
+    })
+    // console.log(this.registerForm.value);
+    
+  }
 
 }

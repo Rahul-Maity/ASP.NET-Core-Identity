@@ -1,0 +1,20 @@
+
+{
+    "editor.letterSpacing": 0.9,
+    "editor.fontWeight": "364",
+    // "editor.fontWeight": "normal",
+    // "editor.fontVariations": false,
+    "editor.suggestFontSize": 0,
+  
+    // "editor.fontFamily": "Space Mono,Anonymous Pro, cascadia code,fira code,Consolas, Liberation Mono, monospace",
+    // "editor.fontFamily": "Anonymous Pro, cascadia code,fira code,Consolas, Liberation Mono, monospace",
+    "editor.fontFamily": " cascadia code,fira code,Consolas, Liberation Mono, monospace",
+  
+    "editor.fontSize": 13.1,
+    // "editor.lineDecorationsWidth": 10,
+    "editor.fontLigatures": true,
+    "editor.lineHeight": 1.7,
+    "editor.codeLens": true,
+    "editor.colorDecorators": true,
+    "chat.editor.fontFamily": "Space Mono"
+}

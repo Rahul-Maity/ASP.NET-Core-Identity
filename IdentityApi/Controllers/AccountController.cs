@@ -72,7 +72,11 @@ namespace IdentityApi.Controllers
             };
             var result = await _userManager.CreateAsync(userToAdd, model.Password);
             if(!result.Succeeded) { return BadRequest(result.Errors); }
-            return Ok("The account has been created, you can now login");
+            return Ok(new JsonResult (new
+            {
+                title = "Account created",
+                message = "Your account created, you can now login"
+            }));
         }
 
         #region private helper method

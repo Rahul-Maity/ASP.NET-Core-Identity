@@ -30,10 +30,10 @@ export class LoginComponent implements OnInit {
   {
     this.submitted = true;
     this.errorMessage = [];
-    if (this.loginForm.invalid) {
+    if (this.loginForm.valid) {
       this.accountService.login(this.loginForm.value).subscribe({
         next:(response :any)=> {
-          
+          console.log(response);
         },
         error:error => {
           if (error.error.errors) { this.errorMessage = error.error.errors }

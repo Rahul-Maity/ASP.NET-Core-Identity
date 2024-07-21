@@ -58,14 +58,19 @@ export class AccountService {
     return this.http.post(`${environment.appUrl}/api/Account/register`, model);
   }
   getJwt() {
-    const key = localStorage.getItem(environment.userKey);
-    if (key) {
-      const user: User = JSON.parse(key);
-      return user.jwt;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const key = localStorage.getItem(environment.userKey);
+      if (key) {
+        const user: User = JSON.parse(key);
+        return user.jwt;
+      }
+      else {
+        return null;
+      }
     }
-    else {
-      return null;
-    }
+    return null;
+   
+   
 
   }
   private setUser(user: User) {

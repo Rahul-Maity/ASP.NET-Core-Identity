@@ -20,6 +20,8 @@
                 </div>
                 <div class="form-floating" *ngIf="errorMessage.length>0">
                     <app-validation-messages [errorMessages]="errorMessage"></app-validation-messages>
+                    <a class="btn btn-link" (click)="resendEmailConfirmationLink()"  *ngIf="errorMessage[0].includes('Please confirm your email')">Resend Email Confirmation Link</a>
+
                 </div>
 
                 <div class="d-grid mt-4 px-1">

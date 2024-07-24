@@ -6,6 +6,7 @@ import { Login } from '../shared/models/login';
 import { User } from '../shared/models/user';
 import { ReplaySubject, map, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { ConfirmEmail } from '../shared/models/account/ConfirmEmail';
 // import { response } from 'express';
 
 @Injectable({
@@ -16,7 +17,7 @@ export class AccountService {
   private userSource = new ReplaySubject<User | null>(1);
   user$ = this.userSource.asObservable();
 
-  constructor(private http: HttpClient, private router:Router) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   refreshUser(jwt: string | null) {
     if (jwt === null) {
@@ -39,11 +40,8 @@ export class AccountService {
         if (user) {
           this.setUser(user);
 
-
-          // have to return from here to get into subs
-          // return user;
         }
-        // return null;
+
       })
     );
   }
@@ -69,13 +67,18 @@ export class AccountService {
       }
     }
     return null;
-   
-   
+
+
 
   }
+  confirmEmail(model: ConfirmEmail) {
+    return this.http.put(`${environment.appUrl}/api/Account/confirm-email`, model);
+
+  }
+
   private setUser(user: User) {
     localStorage.setItem(environment.userKey, JSON.stringify(user));
     this.userSource.next(user);
-    
+
   }
 }

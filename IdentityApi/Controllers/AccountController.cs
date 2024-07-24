@@ -136,7 +136,7 @@ namespace IdentityApi.Controllers
         {
             if (string.IsNullOrEmpty(email)) { return BadRequest("Invalid email"); }
             var user = await _userManager.FindByEmailAsync(email);
-            if(user is null) { return BadRequest("User has not registered yet with this email"); }
+            if(user is null) { return Unauthorized("User has not registered yet with this email"); }
             if (user.EmailConfirmed==true) { return BadRequest("Email already confirmed"); }
             try
             {
@@ -153,6 +153,63 @@ namespace IdentityApi.Controllers
             catch (Exception)
             {
                 return BadRequest("failed sending email, contact admin");
+            }
+
+        }
+
+        [HttpPost("forgot-username-or-password/{email}")]
+        public async Task<IActionResult>ForgotUsernameOrPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email)) { return BadRequest("Invalid email"); }
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user is null) { return Unauthorized("User has not registered yet with this email"); }
+            if (user.EmailConfirmed == false) { return BadRequest("plz confirm your email first"); }
+            try
+            {
+                if(await SendForgotUsernameOrPasswordEmail(user))
+                {
+                    return Ok(new JsonResult(new
+                    {
+                        title = "forgot credentials email send",
+                        message = "plz check your email"
+                    }));
+                    
+                }
+                return BadRequest("failed sending email, contact admin");
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("failed sending email, contact admin");
+            }
+        }
+
+
+
+        [HttpPut("reset-password")]
+        public async Task<IActionResult>ResetPassword(ResetPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if(user is null) { return Unauthorized("User with this email not registerd yet"); }
+            if (user.EmailConfirmed == false) { return BadRequest("plz confirm your email first"); }
+            try
+            {
+                var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+                var result = await _userManager.ResetPasswordAsync(user, decodedToken,model.NewPassword);
+                if(result.Succeeded)
+                {
+                    return Ok(new JsonResult(new
+                    {
+                        title = "Password reset success",
+                        message = "Your password has been reset"
+                    }));
+                }
+                return BadRequest("Invalid token, plz try again");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Invalid token, plz try again");
             }
 
         }
@@ -191,6 +248,24 @@ namespace IdentityApi.Controllers
             var emailSend = new EmailSendDto(user.Email, "Confirm your email", body);
             return await _emailService.SendEmailAsync(emailSend);
 
+        }
+
+        private async Task<bool>SendForgotUsernameOrPasswordEmail(User user)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var url = $"{_config["JWT:clientUrl"]}/{_config["Email:ResetPasswordPath"]}?token={token}&email={user.Email}";
+
+            var body = $"<p>hello, {user.FirstName} {user.LastName}</p>" +
+                 $"<p>Username : {user.UserName}</p>" +
+                 "<p>Reset your password by clicking on the following link.</p>" +
+                 $"<p> <a href=\"{url} \">Click here</a></p>" +
+                  "<p>Thank you,</p>" +
+                  $"<br>{_config["Email:ApplicationName"]}"
+
+                ;
+            var emailsend = new EmailSendDto(user.Email, "Reset Password", body);
+            return await _emailService.SendEmailAsync(emailsend);
         }
 
         #endregion

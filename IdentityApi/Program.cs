@@ -52,6 +52,8 @@ builder.Services.AddIdentityCore<User>(options =>
 
 builder.Services.AddScoped<JWTService>();
 
+builder.Services.AddScoped<EmailService>();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

@@ -3,10 +3,15 @@ using IdentityApi.Models;
 using IdentityApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace IdentityApi.Controllers
@@ -18,15 +23,21 @@ namespace IdentityApi.Controllers
         private readonly JWTService _jwtService;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly EmailService _emailService;
+        private readonly IConfiguration _config;
 
 
         public AccountController(JWTService jwtService
             ,SignInManager<User> signInManager,
-               UserManager<User> userManager )
+               UserManager<User> userManager ,
+               EmailService emailService,
+               IConfiguration config)
         {
             _jwtService = jwtService;
             _signInManager = signInManager;
             _userManager = userManager;
+            _emailService = emailService;
+            _config = config;
         }
 
 
@@ -68,15 +79,56 @@ namespace IdentityApi.Controllers
                 LastName = model.Lastname.ToLower(),
                 UserName = model.Email.ToLower(),
                 Email = model.Email.ToLower(),
-                EmailConfirmed = true
+                //EmailConfirmed = true
             };
             var result = await _userManager.CreateAsync(userToAdd, model.Password);
             if(!result.Succeeded) { return BadRequest(result.Errors); }
-            return Ok(new JsonResult (new
+
+            try
             {
-                title = "Account created",
-                message = "Your account created, you can now login"
-            }));
+                if(await sendConfirmEmailAsync(userToAdd))
+                {
+                    return Ok(new JsonResult(new
+                    {
+                        title = "Account created",
+                        message = "Your account created,plz confirm your email address"
+                    }));
+                }
+                return BadRequest("Failed to send email, plz contact admin");
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("Failed to send email, plz contact admin");
+            }
+
+            
+        }
+
+        [HttpPut("confirm-email")]
+        public async Task<IActionResult>ConfirmEmail(ConfirmEmailDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if(user is null) { return Unauthorized("User not registerd yet with this email"); }
+            if(user.EmailConfirmed == true) { return BadRequest("Email already confirmed, you can login"); }
+            try
+            {
+                var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+                var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+                if(result.Succeeded) {
+                    return Ok(new JsonResult(new
+                    {
+                        title = "email confirmed",
+                        message = "Your email address is confirmed. You can login now"
+                    }));
+                }
+                return BadRequest("Invalid token, plz try again");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest("Invalid token, plz try again");
+            }
         }
 
         #region private helper method
@@ -95,6 +147,24 @@ namespace IdentityApi.Controllers
         private async Task<bool>CheckEmailExistAsync(string email)
         {
             return await _userManager.Users.AnyAsync(u =>u.Email == email.ToLower());
+        }
+
+        private async Task<bool> sendConfirmEmailAsync(User user)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var url = $"{_config["JWT:clientUrl"]}/{_config["Email:ConfirmEmailPath"]}?token={token}&email={user.Email}";
+
+            var body = $"<p>hello, {user.FirstName} {user.LastName}</p>"+
+                 "<p>Please confirm your email address by clicking on the following link.</p>" +
+                 $"<p> <a href=\"{ url} \">Click here</a></p>"+
+                  "<p>Thank you,</p>" +
+                  $"<br>{_config["Email:ApplicationName"]}"
+
+                ;
+            var emailSend = new EmailSendDto(user.Email, "Confirm your email", body);
+            return await _emailService.SendEmailAsync(emailSend);
+
         }
 
         #endregion

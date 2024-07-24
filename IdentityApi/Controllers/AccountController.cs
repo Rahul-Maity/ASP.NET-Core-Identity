@@ -131,6 +131,32 @@ namespace IdentityApi.Controllers
             }
         }
 
+        [HttpPost("resend-email-confirmation-link/{email}")]
+        public async Task<IActionResult>ResendEmailConfirmationLink(string email)
+        {
+            if (string.IsNullOrEmpty(email)) { return BadRequest("Invalid email"); }
+            var user = await _userManager.FindByEmailAsync(email);
+            if(user is null) { return BadRequest("User has not registered yet with this email"); }
+            if (user.EmailConfirmed==true) { return BadRequest("Email already confirmed"); }
+            try
+            {
+                if(await sendConfirmEmailAsync(user))
+                {
+                    return Ok(new JsonResult(new
+                    {
+                        title = "Confirmation email send",
+                        message = "plz confirm your email address"
+                    }));
+                }
+                return BadRequest("failed sending email, contact admin");
+            }
+            catch (Exception)
+            {
+                return BadRequest("failed sending email, contact admin");
+            }
+
+        }
+
         #region private helper method
 
         private UserDto CreateApplicationUserDto(User user)

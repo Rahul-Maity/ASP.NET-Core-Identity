@@ -8,7 +8,7 @@
   
     // "editor.fontFamily": "Space Mono,Anonymous Pro, cascadia code,fira code,Consolas, Liberation Mono, monospace",
     // "editor.fontFamily": "Anonymous Pro, cascadia code,fira code,Consolas, Liberation Mono, monospace",
-    "editor.fontFamily": " cascadia code,fira code,Consolas, Liberation Mono, monospace",
+    "editor.fontFamily": " Space Mono,cascadia code,fira code,Consolas, Liberation Mono, monospace",
   
     "editor.fontSize": 13.1,
     // "editor.lineDecorationsWidth": 10,

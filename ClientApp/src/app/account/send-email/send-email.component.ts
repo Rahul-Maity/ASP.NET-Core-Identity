@@ -46,9 +46,9 @@ export class SendEmailComponent implements OnInit {
     })
   }
   initializeForm() {
-    this.emailForm = this.fb.group({
-      email: ['', [Validators.required, Validators.pattern('^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$')]]
-    })
+      this.emailForm = this.fb.group({
+        email: ['', [Validators.required, Validators.pattern('^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}$')]]
+      })
   }
 
   sendEmail() {
@@ -69,7 +69,23 @@ export class SendEmailComponent implements OnInit {
           }
         })
       }
+      else if (this.mode.includes('forgot-username-or-password')) {
+        this.accountService.forgotUsernameOrPassword(this.emailForm.get('email')?.value).subscribe({
+          next: (res: any) => {
+            this.sharedService.showNotification(true,res.value.title, res.value.message);
+            this.router.navigateByUrl('/account/login');
+          },
+          error: (error: any) => {
+            if (error.error.errors) { this.errorMessages = error.error.errors; }
+            else {
+              this.errorMessages.push(error.error);
+            }
+          }
+        })
+
+      }
     }
+   
 
   }
 

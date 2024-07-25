@@ -7,6 +7,7 @@ import { AccountRoutingModule } from './account-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { SendEmailComponent } from './send-email/send-email.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 
 
@@ -15,7 +16,8 @@ import { SendEmailComponent } from './send-email/send-email.component';
     LoginComponent,
     RegisterComponent,
     ConfirmEmailComponent,
-    SendEmailComponent
+    SendEmailComponent,
+    ResetPasswordComponent
   ],
   imports: [
     CommonModule,

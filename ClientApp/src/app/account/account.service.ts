@@ -75,6 +75,9 @@ export class AccountService {
     return this.http.put(`${environment.appUrl}/api/Account/confirm-email`, model);
 
   }
+  resendEmailConfirmationLink(email: string) {
+    return this.http.post(`${environment.appUrl}/api/Account/resend-email-confirmation-link/${email}`, {});
+  }
 
   private setUser(user: User) {
     localStorage.setItem(environment.userKey, JSON.stringify(user));
